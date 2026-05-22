@@ -1,0 +1,250 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Document Forensics API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: forensics
+    description: Document forensics operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /forensics/analyze:
+    post:
+      operationId: analyzeDocument
+      tags: [forensics]
+      summary: Analyze a document for tampering
+      description: Uploads a document image and returns a forensic analysis report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentAnalysisInput"
+      responses:
+        "200":
+          description: Analysis complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /forensics/history:
+    get:
+      operationId: listAnalyses
+      tags: [forensics]
+      summary: List past document analyses
+      responses:
+        "200":
+          description: List of analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnalysisSummary"
+
+  /forensics/history/{id}:
+    get:
+      operationId: getAnalysis
+      tags: [forensics]
+      summary: Get a specific analysis by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analysis detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResult"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /forensics/stats:
+    get:
+      operationId: getForensicsStats
+      tags: [forensics]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForensicsStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    DocumentAnalysisInput:
+      type: object
+      required:
+        - documentType
+        - imageBase64
+      properties:
+        documentType:
+          type: string
+          description: "Type of document: aadhaar, pan, driving_license, degree, income_certificate, caste_certificate"
+        imageBase64:
+          type: string
+          description: Base64 encoded image of the document
+        filename:
+          type: string
+          description: Original filename
+
+    Finding:
+      type: object
+      required:
+        - category
+        - severity
+        - description
+      properties:
+        category:
+          type: string
+          description: Category of finding (e.g. Font Inconsistency, Visual Artifact)
+        severity:
+          type: string
+          description: "info, warning, or danger"
+        description:
+          type: string
+          description: Detailed description of the finding
+
+    AnalysisResult:
+      type: object
+      required:
+        - id
+        - documentType
+        - verdict
+        - confidence
+        - tampering_score
+        - findings
+        - summary
+        - createdAt
+      properties:
+        id:
+          type: integer
+        documentType:
+          type: string
+        filename:
+          type: ["string", "null"]
+        verdict:
+          type: string
+          description: "authentic, suspicious, or tampered"
+        confidence:
+          type: integer
+          description: 0-100 confidence score
+        tampering_score:
+          type: integer
+          description: 0-100 tampering score
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        summary:
+          type: string
+        createdAt:
+          type: string
+
+    AnalysisSummary:
+      type: object
+      required:
+        - id
+        - documentType
+        - verdict
+        - confidence
+        - tampering_score
+        - summary
+        - createdAt
+      properties:
+        id:
+          type: integer
+        documentType:
+          type: string
+        filename:
+          type: ["string", "null"]
+        verdict:
+          type: string
+        confidence:
+          type: integer
+        tampering_score:
+          type: integer
+        summary:
+          type: string
+        createdAt:
+          type: string
+
+    ForensicsStats:
+      type: object
+      required:
+        - total
+        - authentic
+        - suspicious
+        - tampered
+        - avgConfidence
+        - avgTamperingScore
+      properties:
+        total:
+          type: integer
+        authentic:
+          type: integer
+        suspicious:
+          type: integer
+        tampered:
+          type: integer
+        avgConfidence:
+          type: number
+        avgTamperingScore:
+          type: number
