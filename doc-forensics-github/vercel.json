@@ -1,0 +1,5 @@
+{
+  "installCommand": "npx pnpm@9 install --no-frozen-lockfile",
+  "buildCommand": "npx pnpm@9 --filter @workspace/doc-forensics run build",
+  "outputDirectory": "artifacts/doc-forensics/dist/public"
+}
