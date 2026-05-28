@@ -1,5 +1,5 @@
 {
-  "installCommand": "cd doc-forensics-github && npx pnpm@9 install",
-  "buildCommand": "cd doc-forensics-github && npx pnpm@9 --filter @workspace/doc-forensics run build",
-  "outputDirectory": "doc-forensics-github/artifacts/doc-forensics/dist/public"
+  "installCommand": "npx pnpm@9 install",
+  "buildCommand": "npx pnpm@9 --filter @workspace/doc-forensics run build",
+  "outputDirectory": "artifacts/doc-forensics/dist/public"
 }
